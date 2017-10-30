@@ -8,13 +8,15 @@ def setup_view(app: Application):
     pass
 
 
-async def home(request: Request):
+async def homePage(request: Request):
     return HTTPFound('/main.html')
 
 
 async def listPorts(request: Request):
     return web.json_response([{
         'id': k,
+        'mode': v.mode,
+        'level': v.level,
     } for k, v in request.app['io'].ports.items()])
 
 
@@ -39,8 +41,8 @@ async def addPort(request: Request):
 async def setPortStatus(request: Request):
     port_id = int(request.match_info['id'])
     try:
-        port = request.app['io'].io.ports[port_id]
-        j = await request.json
+        port = request.app['io'].ports[port_id]
+        j = await request.json()
         if 'mode' in j:
             port.mode = j['mode']
         if 'level' in j:
