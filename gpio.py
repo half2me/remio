@@ -21,7 +21,7 @@ class Port:
             self._mode = 'in'
             rio.add_event_detect(self.number, rio.BOTH, self._onChange, bouncetime=50)
         elif value == 'out':
-            rio.remove_event_detect(port_number)
+            rio.remove_event_detect(self.number)
             rio.setup(self.number, rio.OUT)
             self._mode = 'out'
 
