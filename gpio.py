@@ -17,12 +17,14 @@ class Port:
     @mode.setter
     def mode(self, value):
         if value == 'in':
-            rio.remove_event_detect(self.number)
+            if self.mode == 'in':
+                rio.remove_event_detect(self.number)
             rio.setup(self.number, rio.IN, pull_up_down=rio.PUD_UP)
             self._mode = 'in'
             rio.add_event_detect(self.number, rio.BOTH, self._onChange, bouncetime=50)
         elif value == 'out':
-            rio.remove_event_detect(self.number)
+            if self.mode == 'in':
+                rio.remove_event_detect(self.number)
             rio.setup(self.number, rio.OUT)
             self._mode = 'out'
 
