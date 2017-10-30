@@ -37,21 +37,52 @@ Vue.component('port-object', {
 });
 
 Vue.component('port-list', {
-    props: ['ports'],
+    data () {
+        return {
+            'ports': [],
+            'newPortNumber': null
+        }
+    },
+
+    mounted () {
+        this.refresh()
+    },
+
+    methods: {
+        refresh () {
+            axios.get('/ports').then(r => this.ports = response.data);
+        },
+
+        changeLevel (portId, level) {
+            axios.post('/ports/' + portId, {level: level}).then(this.refresh)
+        },
+
+        changeMode (portId, mode) {
+            axios.post('/ports/' + portId, {mode: mode}).then(this.refresh);
+        },
+
+        addPort () {
+            axios.put('/ports/' + this.newPortNumber, {}).then(this.refresh);
+        }
+    },
     template: `
 <template>
-    <port-object v-for="p in ports" :key="p.id" :port="p"></port-object>
+    <port-object v-for="p in ports" @changeMode="m => changeMode(p.id, m)" @changeLevel="l => changeLevel(p.id, l)" :key="p.id" :port="p"></port-object>
     <br>
     <div class="field has-addons">
         <div class="control">
-            <input class="input" type="number" placeholder="Port Number">
+            <input class="input" type="number" v-model="newPortNumber" placeholder="Port Number">
         </div>
         <div class="control">
-            <a class="button is-info">
+            <a @click="addPort" class="button is-info">
                 Add
             </a>
         </div>
     </div>
 </template>
 `,
+});
+
+app = new Vue({
+    el: '#app',
 });
