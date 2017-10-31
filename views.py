@@ -15,8 +15,6 @@ async def homePage(request: Request):
 async def listPorts(request: Request):
     return web.json_response([{
         'id': k,
-        'mode': v.mode,
-        'level': v.level,
     } for k, v in request.app['io'].ports.items()])
 
 
@@ -27,6 +25,7 @@ async def getPortStatus(request: Request):
         return web.json_response({
             'mode': port.mode,
             'level': port.level,
+            'default_level': port.default
         })
     except KeyError:
         return web.HTTPNotFound()
@@ -47,6 +46,17 @@ async def setPortStatus(request: Request):
             port.mode = j['mode']
         if 'level' in j:
             port.level = j['level']
+        if 'default_level' in j:
+            port.default = j['default_level']
+        return web.json_response({})
+    except KeyError:
+        return web.HTTPNotFound()
+
+
+async def deletePort(request: Request):
+    port_id = int(request.match_info['id'])
+    try:
+        del request.app['io'].ports[port_id]
         return web.json_response({})
     except KeyError:
         return web.HTTPNotFound()

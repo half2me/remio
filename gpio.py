@@ -2,12 +2,15 @@ import RPi.GPIO as rio
 
 
 class Port:
-    def __init__(self, number, mode='in', default=1):
+    def __init__(self, number, mode='input', default_level=True):
         self.number = number
         self._mode = None
         self._default = None
         self.mode = mode
-        self.default = default
+        self.default = default_level
+
+    def __del__(self):
+        rio.cleanup(self.number)
 
     @property
     def mode(self):
@@ -18,21 +21,21 @@ class Port:
 
     @mode.setter
     def mode(self, value):
-        if value == 'in':
-            if self.mode == 'in':
+        if value == 'input':
+            if self.mode == 'input':
                 rio.remove_event_detect(self.number)
-            if self.default == 1:
+            if self.default:
                 rio.setup(self.number, rio.IN, pull_up_down=rio.PUD_UP)
             else:
                 rio.setup(self.number, rio.IN, pull_up_down=rio.PUD_DOWN)
-            self._mode = 'in'
+            self._mode = 'input'
             rio.add_event_detect(self.number, rio.BOTH, self._onChange, bouncetime=50)
-        elif value == 'out':
-            if self.mode == 'in':
+        elif value == 'output':
+            if self.mode == 'input':
                 rio.remove_event_detect(self.number)
             rio.setup(self.number, rio.OUT)
-            self._mode = 'out'
-            self.level = 1
+            self._mode = 'output'
+            self.level = self._default
 
     @property
     def default(self):
@@ -45,11 +48,12 @@ class Port:
 
     @property
     def level(self):
-        return 1 if rio.input(self.number) == rio.HIGH else 0
+        return rio.input(self.number) == rio.HIGH
 
     @level.setter
     def level(self, value):
-        rio.output(self.number, rio.HIGH) if value == 1 else rio.output(self.number, rio.LOW)
+        if self.mode == 'output':
+            rio.output(self.number, rio.HIGH) if value else rio.output(self.number, rio.LOW)
 
 
 class Io:
@@ -63,10 +67,6 @@ class Io:
 
     async def onStartup(self, app):
         rio.setmode(rio.BCM)  # Broadcom pin-numbering scheme
-        self.ports[23] = Port(23, 'out')
-        self.ports[23].level = 0
-
-        self.ports[18] = Port(18, 'in')
 
     async def onShutdown(self, app):
         rio.cleanup()
