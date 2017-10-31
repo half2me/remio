@@ -2,7 +2,8 @@ import RPi.GPIO as rio
 
 
 class Port:
-    def __init__(self, number, mode='input', default_level=True):
+    def __init__(self, app, number, mode='input', default_level=True):
+        self.app = app
         self.number = number
         self._mode = None
         self._default = None
@@ -17,7 +18,8 @@ class Port:
         return self._mode
 
     def _onChange(self, channel):
-        print("PORT " + str(self.number) + " STATUS: " + str(self.level))
+        for _, ws in self.app['websockets'].items():
+            ws.send_str('{"port": ' + str(self.number) + '}')
 
     @mode.setter
     def mode(self, value):

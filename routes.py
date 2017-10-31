@@ -9,4 +9,6 @@ def setup_routes(app):
     app.router.add_post('/ports/{id}', setPortStatus)
     app.router.add_delete('/ports/{id}', deletePort)
 
+    app.router.add_get('/ws', ws_handler)
+
     app.router.add_static('/', path='static', name='static')

@@ -9,6 +9,7 @@ setup_routes(app)
 setup_view(app)
 
 app['io'] = Io()
+app['websockets'] = {}
 app.on_startup.append(app['io'].onStartup)
 app.on_shutdown.append(app['io'].onShutdown)
 web.run_app(app, host='0.0.0.0')

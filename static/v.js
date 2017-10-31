@@ -81,13 +81,19 @@ Vue.component('port-object', {
 Vue.component('port-list', {
     data () {
         return {
-            'ports': [],
-            'newPortNumber': null
+            ports: [],
+            newPortNumber: null,
+            ws: null,
         }
     },
 
     mounted () {
-        this.refresh()
+        this.refresh();
+        this.ws = new WebSocket('ws://' + window.location.hostname + ':' + window.location.port + '/ws');
+        this.ws.onmessage = m => {
+            data = JSON.parse(m.data);
+            this.$children.find(ch => ch.id === data['port']).refresh();
+        };
     },
 
     methods: {
@@ -112,7 +118,7 @@ Vue.component('port-list', {
             <input class="input" type="number" min="0" max="40" style="width: 10em" v-model="newPortNumber" placeholder="Port Number">
         </div>
         <div class="control">
-            <a @click="addPort" class="button is-info">
+            <a @keyup.enter="addPort" @click="addPort" class="button is-info">
                 Add Port
             </a>
         </div>

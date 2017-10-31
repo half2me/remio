@@ -1,3 +1,4 @@
+import aiohttp
 from aiohttp import web
 from aiohttp.web import Request, Application, HTTPFound
 
@@ -33,7 +34,7 @@ async def getPortStatus(request: Request):
 
 async def addPort(request: Request):
     port_id = int(request.match_info['id'])
-    request.app['io'].ports[port_id] = Port(port_id)
+    request.app['io'].ports[port_id] = Port(app=request.app, number=port_id)
     return web.json_response({})
 
 
@@ -60,3 +61,21 @@ async def deletePort(request: Request):
         return web.json_response({})
     except KeyError:
         return web.HTTPNotFound()
+
+
+async def ws_handler(request: Request):
+    ws = web.WebSocketResponse()
+    await ws.prepare(request)
+
+    request.app['websockets'][ws] = ws
+
+    async for msg in ws:
+        if msg.type == aiohttp.WSMsgType.TEXT:
+            pass
+        elif msg.type == aiohttp.WSMsgType.ERROR:
+            print('ws connection closed with exception %s' %
+                  ws.exception())
+
+    del request.app['websockets'][ws]
+
+    return ws
